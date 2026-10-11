@@ -114,6 +114,16 @@ void FreeRamdisk(DIR* dir, dev_t dev) {
 }
 
 bool ForceNormalBoot(const std::string& cmdline, const std::string& bootconfig) {
+    // A temporarily booted PBRP ramdisk must not switch into the installed ROM
+    // when the bootloader appends force_normal_boot. Normal ROM boots retain
+    // the platform behavior; both the recovery binary and explicit marker
+    // are required for this override.
+    std::string pbrp;
+    android::fs_mgr::GetBootconfigFromString(bootconfig, "androidboot.pbrp", &pbrp);
+    if (pbrp.empty()) {
+        android::fs_mgr::GetKernelCmdline("androidboot.pbrp", &pbrp);
+    }
+    if (IsRecoveryMode() && pbrp == "1") return false;
     return bootconfig.find("androidboot.force_normal_boot = \"1\"") != std::string::npos ||
            cmdline.find("androidboot.force_normal_boot=1") != std::string::npos;
 }

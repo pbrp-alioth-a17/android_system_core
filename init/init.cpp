@@ -695,7 +695,8 @@ static BootMode GetBootMode() {
     auto bootmode = GetProperty("ro.bootmode", GetProperty("ro.boot.mode", ""));
     if (bootmode == "charger") {
         return BootMode::CHARGER_MODE;
-    } else if (IsRecoveryMode() && GetIntProperty("ro.boot.force_normal_boot", 0) == 0) {
+    } else if (IsRecoveryMode() && (GetIntProperty("ro.boot.force_normal_boot", 0) == 0 ||
+                                    GetBoolProperty("ro.boot.pbrp", false))) {
         return BootMode::RECOVERY_MODE;
     }
 
